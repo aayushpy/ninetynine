@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ninety-Nine — an archive of Singapore's homes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ffffff; --panel:#f7f7f4; --ink:#211e17; --ink-soft:#6a675f; --ink-faint:#9a968e;
+    --line:#e5e2dc; --accent:#a8392b; --warm:#b9742f;
+    --serif:"Fraunces",Georgia,serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--paper);color:var(--ink);font-family:var(--mono);-webkit-font-smoothing:antialiased;overflow:hidden}
+  body{display:flex;flex-direction:column}
+
+  header{display:flex;justify-content:space-between;align-items:flex-start;padding:24px 40px 0;flex:none}
+  .masthead .kick{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px}
+  .masthead .wm{font-family:var(--serif);font-style:italic;font-weight:300;font-size:clamp(30px,4vw,42px);line-height:.95;letter-spacing:-.015em}
+  .desc{font-size:12.5px;letter-spacing:.02em;color:var(--ink-soft);text-align:right;max-width:34ch;line-height:1.6;padding-top:6px}
+  @media(max-width:760px){.desc{display:none}}
+
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:12px 28px;min-height:0;overflow:hidden}
+  .spread{display:grid;grid-template-columns:minmax(330px,400px) minmax(0,540px);gap:54px;justify-content:center;align-items:start;width:100%;max-width:1040px}
+  @media(max-width:880px){.spread{grid-template-columns:1fr;gap:26px;max-width:540px;overflow-y:auto;max-height:100%}}
+
+  /* left leaf — the map */
+  .mapleaf{display:flex;flex-direction:column;padding-top:30px}
+  @media(max-width:880px){.mapleaf{order:2;padding-top:0}}
+  .maptitle{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px}
+  .locwrap{position:relative;width:100%;aspect-ratio:7/5}
+  #locator{position:absolute;inset:0;width:100%;height:100%}
+  .legend{display:flex;gap:20px;margin-top:18px;font-size:11.5px;color:var(--ink-soft)}
+  .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle}
+  .legend .here{background:var(--accent)} .legend .been{background:var(--warm)}
+  .stats{margin-top:20px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-soft);line-height:1.85}
+  .stats b{color:var(--warm)} .stats .hunt{color:var(--ink-faint)}
+
+  /* right leaf — the record */
+  .platehead{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px}
+  .entry{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft)}
+  .status{font-size:10px;letter-spacing:.15em;text-transform:uppercase;padding:5px 12px;border-radius:20px;border:1px solid transparent;opacity:0;transition:opacity .3s}
+  .status.show{opacity:1}
+  .status.old{color:var(--warm);border-color:#e2cfaa;background:#fbf6ea}
+  .status.end{color:var(--accent);border-color:#e7c3bc;background:#fff2ef}
+  .status.new{color:#3f7d6e;border-color:#c7ded6;background:#f0faf6}
+  .status.gone-s{color:#8a7d6f;border-color:var(--line);background:var(--panel)}
+
+  .plate{position:relative;width:100%;aspect-ratio:3/2;border-radius:5px;overflow:hidden;background:#f5f5f2;box-shadow:0 1px 0 #fff,0 22px 50px -28px rgba(33,30,23,.35);border:1px solid #eeeeea}
+  .plate canvas,.plate img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;transition:opacity .5s}
+  .plate canvas.show,.plate img.show{display:block}
+  .plate .srcline{position:absolute;bottom:9px;right:11px;z-index:2;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(20,18,14,.5);padding:3px 8px;border-radius:4px;display:none}
+
+  .rec{margin-top:24px;animation:rise .5s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .name{font-family:var(--serif);font-weight:500;font-size:clamp(28px,4.2vw,38px);line-height:1.03;letter-spacing:-.015em}
+  .dates{font-family:var(--serif);font-weight:300;font-size:clamp(20px,3.2vw,26px);margin-top:8px;color:var(--ink-soft)}
+  .dates b{color:var(--ink)} .dates .end{color:var(--accent)}
+  .place{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin-top:10px}
+  .tl{margin:26px 0 4px}
+  .tl-track{position:relative;height:3px;background:var(--line);border-radius:2px}
+  .tl-lived{position:absolute;left:0;top:0;height:100%;background:var(--ink);border-radius:2px}
+  .tl-now{position:absolute;top:-4px;width:11px;height:11px;border-radius:50%;background:var(--paper);border:2.5px solid var(--accent);transform:translateX(-50%)}
+  .tl-you{position:absolute;top:-7px;width:1.5px;height:17px;background:var(--ink-faint)}
+  .tl-labels{display:flex;justify-content:space-between;margin-top:11px;font-size:11px;letter-spacing:.04em;color:var(--ink-soft)}
+  .tl-labels .r{color:var(--accent)}
+  .note{font-size:13px;color:var(--ink-soft);margin-top:22px;line-height:1.65}
+  .verdict{font-family:var(--serif);font-size:clamp(16px,2.4vw,20px);line-height:1.5;margin-top:8px;color:var(--ink)}
+  .verdict b{font-weight:600} .verdict .em{color:var(--accent);font-style:italic}
+  .gen{font-family:var(--serif);font-style:italic;font-size:14px;line-height:1.5;color:var(--ink-soft);margin-top:13px}
+
+  /* footer */
+  footer{flex:none;display:flex;align-items:center;justify-content:space-between;gap:22px;padding:0 40px 24px}
+  .controls{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+  .born{font-size:12.5px;color:var(--ink-soft)}
+  .born input{width:74px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-family:var(--mono);font-size:14px;border-radius:8px;padding:7px 10px;margin-left:5px}
+  .born input:focus{outline:none;border-color:var(--accent)}
+  .modes{display:flex;gap:7px;flex-wrap:wrap}
+  .modes button{background:none;border:1px solid var(--line);color:var(--ink-soft);font-family:var(--mono);font-size:12.5px;padding:8px 14px;border-radius:22px;cursor:pointer;transition:all .15s}
+  .modes button:hover{border-color:var(--ink-faint);color:var(--ink)}
+  .modes button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .modes button.gone.on{background:#8a7d6f;border-color:#8a7d6f}
+  .pull{background:var(--ink);color:var(--paper);border:none;border-radius:12px;font-family:var(--mono);font-weight:500;font-size:15px;letter-spacing:.03em;padding:15px 34px;cursor:pointer;transition:transform .06s,background .2s}
+  .pull:hover{background:#000} .pull:active{transform:scale(.98)}
+  .abt{position:fixed;left:40px;bottom:5px;z-index:5;font-size:11.5px;color:var(--ink-faint);background:none;border:none;cursor:pointer}
+  .abt:hover{color:var(--accent)}
+  @media(max-width:760px){
+    header{padding:18px 22px 0}
+    footer{flex-direction:column-reverse;align-items:stretch;gap:14px;padding:0 22px 18px}
+    .controls{justify-content:space-between} .pull{width:100%;padding:15px}
+    .abt{display:none}
+  }
+  .preview{position:fixed;top:54px;right:26px;z-index:6;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--warm);border:1px solid #e2cfaa;background:#fbf6ea;border-radius:20px;padding:5px 12px;display:none}
+  .take{position:fixed;inset:0;z-index:30;background:rgba(255,255,255,.97);display:none;overflow-y:auto;padding:60px 24px}
+  .take.show{display:block} .take .inner{max-width:600px;margin:0 auto}
+  .take .x{position:fixed;top:22px;right:26px;z-index:31;background:var(--paper);border:1px solid var(--line);color:var(--ink-soft);border-radius:50%;width:40px;height:40px;font-size:19px;cursor:pointer}
+  .take .bigclose{margin-top:30px;background:var(--ink);color:var(--paper);border:none;border-radius:10px;font-family:var(--mono);font-size:13.5px;letter-spacing:.02em;padding:13px 26px;cursor:pointer;transition:background .2s}
+  .take .bigclose:hover{background:#000}
+  .take h2{font-family:var(--serif);font-weight:300;font-size:clamp(28px,5vw,40px)}
+  .take p{font-size:14px;line-height:1.75;color:#4a463c;margin-top:16px} .take p b{color:var(--ink)}
+  .take .src{font-size:11.5px;color:var(--ink-soft);margin-top:18px;line-height:1.6}
+</style>
+</head>
+<body>
+<header>
+  <div class="masthead"><div class="kick">An archive of homes</div><div class="wm">Ninety-Nine</div></div>
+  <div class="desc">Every HDB flat in Singapore is leased, not owned, for ninety-nine years. Here is each one, and the time it has left.</div>
+</header>
+
+<main>
+  <div class="spread">
+    <div class="mapleaf">
+      <div class="maptitle">Where it stands</div>
+      <div class="locwrap"><canvas id="locator"></canvas></div>
+      <div class="legend"><span><i class="here"></i>this home</span><span><i class="been"></i>met</span></div>
+      <div class="stats" id="stats"></div>
+    </div>
+
+    <div class="cardleaf">
+      <div class="platehead"><div class="entry" id="entry">The archive</div><div class="status" id="status"></div></div>
+      <div class="plate">
+        <canvas id="facade"></canvas>
+        <img id="photo" alt="" referrerpolicy="no-referrer" />
+        <div class="srcline" id="srcline">Google Street View</div>
+      </div>
+      <div class="rec" id="rec">
+        <div class="name" id="name">Meet a home.</div>
+        <div class="dates" id="dates"></div>
+        <div class="place" id="place">every flat here is leased, not owned — for ninety-nine years</div>
+        <div class="tl" id="tl" style="display:none">
+          <div class="tl-track"><div class="tl-lived" id="tlLived"></div><div class="tl-you" id="tlYou" style="display:none"></div><div class="tl-now" id="tlNow"></div></div>
+          <div class="tl-labels"><span id="tlBuilt"></span><span class="r" id="tlEnd"></span></div>
+        </div>
+        <div class="note" id="note">Pull a home and you'll see the building itself, where it stands, and the year its lease runs out.</div>
+        <div class="verdict" id="verdict"></div>
+        <div class="gen" id="gen"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="controls">
+    <span class="born">born <input id="birth" type="number" value="2000" min="1920" max="2025" /></span>
+    <div class="modes" id="modes">
+      <button data-m="random" class="on">random</button>
+      <button data-m="old">oldest</button>
+      <button data-m="end">nearly gone</button>
+      <button data-m="new">newest</button>
+      <button data-m="gone" class="gone">the gone</button>
+    </div>
+  </div>
+  <button class="pull" id="pull">Meet a home&nbsp;&nbsp;→</button>
+</footer>
+
+<button class="abt" id="aboutBtn">↳ what this is</button>
+<div class="preview" id="previewPill">preview data — add blocks.json</div>
+
+<div class="take" id="about"><button class="x" data-close>×</button><div class="inner">
+  <h2>What you're looking at</h2>
+  <p>Almost everyone in Singapore lives on land they will never own. An HDB flat is sold on a <b>99-year lease</b>, and the clock starts the day the block is built. When it ends, the flat and its land return to the state. So every home has two dates — the year it was built, and the year it dies.</p>
+  <p>This is an archive of those dates. Pull a home and meet it: the real building, where it stands, and its lifespan. <b>The oldest flats still standing have already spent two-thirds of their lives.</b> And <b>137</b> are gone entirely — under "the gone," you'll see what stands in their place today.</p>
+  <p>Not a forecast of eviction: some blocks are redeveloped early (SERS), a voluntary scheme (VERS) is planned, most simply run their lease down.</p>
+  <p class="src">Photographs: Google Street View · lease dates: HDB resale records · locations: OneMap · data.gov.sg · built by ——</p>
+  <button class="bigclose" data-close>← Back to the archive</button>
+</div></div>
+
+<script>
+const THIS_YEAR=2026, LEASE=99, LIFE_EXP=83;
+/* Paste a Google Maps API key (enable "Street View Static API"), restricted to your domain, for real photos. Blank = drawn fallback. */
+const GOOGLE_KEY="AIzaSyDft2iq4Rnd5HMX8HULcvMAxQtTawcTcpQ";
+
+const DEMOLISHED=["32 TANGLIN HALT RD","25 TANGLIN HALT RD","45 TANGLIN HALT RD","1A WOODLANDS CTR RD","26 TANGLIN HALT RD","24 TANGLIN HALT RD","29 TANGLIN HALT RD","28 TANGLIN HALT RD","2A WOODLANDS CTR RD","27 TANGLIN HALT RD","31 TANGLIN HALT RD","248 ANG MO KIO AVE 2","33 TAMAN HO SWEE","88 ZION RD","29 HAVELOCK RD","17 REDHILL CL","22 REDHILL CL","3 ROCHOR RD","403 CLEMENTI AVE 1","402 CLEMENTI AVE 1","401 CLEMENTI AVE 1","313 CLEMENTI AVE 4","323 CLEMENTI AVE 5","1 JLN PASAR BARU","59 SIMS DR","7 TEBAN GDNS RD","168 BOON LAY DR","169 BOON LAY DR","172 BOON LAY DR","10 YUNG KUANG RD","220 BOON LAY AVE","6 UPP BOON KENG RD","10 GHIM MOH RD","172 STIRLING RD","38 DOVER RD","76 C'WEALTH DR","51 TANGLIN HALT RD","30 LOR 5 TOA PAYOH","247 ANG MO KIO AVE 3","83 BEDOK NTH RD","114 BT MERAH VIEW","89 ZION RD","13 REDHILL CL","12 REDHILL CL","5 REDHILL CL","111 BT MERAH VIEW","4 ROCHOR RD","407 CLEMENTI AVE 1","409 CLEMENTI AVE 1","62 SIMS DR","10 TEBAN GDNS RD","170 BOON LAY DR","171 BOON LAY DR","20 UPP BOON KENG RD","10 UPP BOON KENG RD","54 TANGLIN HALT RD","39A C'WEALTH AVE","27A C'WEALTH AVE","96 MARGARET DR","77 C'WEALTH DR","31 DOVER RD","113 BT MERAH VIEW","110 BT MERAH VIEW","322 CLEMENTI AVE 5","167 BOON LAY DR","7 YUNG KUANG RD","8 YUNG KUANG RD","36 DOVER RD","31 TAMAN HO SWEE","90 ZION RD","314 CLEMENTI AVE 4","54 SIMS DR","5 YUNG PING RD","53 TANGLIN HALT RD","252 ANG MO KIO AVE 4","91 ZION RD","20 REDHILL CL","16 REDHILL CL","18 REDHILL CL","6 YUNG PING RD","35 DOVER RD","78 C'WEALTH DR","52 TANGLIN HALT RD","3 REDHILL CL","3 TEBAN GDNS RD","79 C'WEALTH DR","80 C'WEALTH DR","21 REDHILL CL","8 REDHILL CL","24 KG BAHRU HILL","3 EAST COAST RD","5 TEBAN GDNS RD","19 KG BAHRU HILL","11 REDHILL CL","173 STIRLING RD","6 REDHILL CL","1 REDHILL CL","19 REDHILL CL","7 REDHILL CL","2 REDHILL CL","9 REDHILL CL","2 EAST COAST RD","18 KG BAHRU HILL","22 KG BAHRU HILL","23 KG BAHRU HILL","455 ANG MO KIO AVE 10","4 HILLVIEW AVE","6 HILLVIEW AVE","22 OUTRAM PK","12 SHORT ST","13 SHORT ST","145 HU CHING RD","24 DOVER CRES","166 LOR 1 TOA PAYOH","454 ANG MO KIO AVE 10","107 DEPOT RD","142 HU CHING RD","316 ANG MO KIO AVE 1","11 SHORT ST","13 TEBAN GDNS RD","3 LIM CHU KANG RD","7 HILLVIEW AVE","8 HILLVIEW AVE","32 LOWER DELTA RD","51 NILE RD","54 NILE RD","24 JLN MEMBINA BARAT","5 BUANGKOK STH FARMWAY 1","142 TIONG BAHRU RD","21 OUTRAM PK","89 LOR 2 TOA PAYOH","167 LOR 1 TOA PAYOH","137 ALEXANDRA RD","68 DAKOTA CRES"];
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rnd=mulberry32(7);
+function gauss(){let u=0,v=0;while(!u)u=rnd();while(!v)v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+const TOWNS=[["Tiong Bahru",1.285,103.827,1961,1976,150],["Queenstown",1.294,103.806,1962,1981,280],["Toa Payoh",1.335,103.849,1966,1986,430],["Bukit Merah",1.281,103.823,1968,1991,450],["Kallang/Whampoa",1.310,103.865,1970,2001,320],["Geylang",1.318,103.887,1970,1999,300],["Marine Parade",1.303,103.905,1975,1991,130],["Ang Mo Kio",1.369,103.846,1977,1993,540],["Bedok",1.324,103.930,1975,1999,620],["Clementi",1.315,103.765,1976,1993,320],["Serangoon",1.350,103.873,1980,2002,250],["Bukit Batok",1.349,103.749,1985,2004,380],["Tampines",1.353,103.945,1985,2009,660],["Jurong West",1.340,103.707,1985,2007,640],["Jurong East",1.333,103.742,1983,2002,300],["Yishun",1.429,103.835,1985,2008,540],["Hougang",1.371,103.892,1986,2005,470],["Pasir Ris",1.372,103.949,1990,2010,330],["Choa Chu Kang",1.385,103.745,1990,2011,420],["Bukit Panjang",1.378,103.762,1990,2011,320],["Woodlands",1.437,103.786,1990,2013,620],["Sembawang",1.449,103.820,2000,2019,300],["Sengkang",1.391,103.895,2000,2020,600],["Punggol",1.405,103.902,2005,2024,560]];
+function synthetic(){const out=[];for(const[town,lat,lng,vs,ve,c]of TOWNS){for(let i=0;i<c;i++){out.push({block:String(100+Math.floor(rnd()*800)),street:town.toUpperCase()+" RD",town,lease:Math.round(vs+(ve-vs)*rnd()),lat:lat+gauss()*0.0092,lng:lng+gauss()*0.0122});}}return out;}
+async function loadBlocks(){
+  try{const r=await fetch('blocks.json',{cache:'no-store'});if(r.ok){const d=await r.json();
+    if(Array.isArray(d)&&d.length)return d.map(b=>({block:b.block,street:b.street||'',town:b.town||'',lease:parseInt(String(b.lease_start).slice(0,4)),lat:+b.lat,lng:+b.lng})).filter(b=>b.lat&&b.lng&&b.lease);}
+  }catch(e){}
+  document.getElementById('previewPill').style.display='inline-block';return synthetic();
+}
+
+let blocks=[],sorted={},minYear=9999,minLeft=999,current=null,goneMarker=null,photoTok=0,pulse=0,pulseRaf=0;
+const seenSet=new Set();let oldestFound=9999;
+const $=id=>document.getElementById(id);
+function titlecase(s){return(s||'').toLowerCase().replace(/\b\w/g,m=>m.toUpperCase());}
+function bearing(la1,lo1,la2,lo2){const tR=d=>d*Math.PI/180;const y=Math.sin(tR(lo2-lo1))*Math.cos(tR(la2));const x=Math.cos(tR(la1))*Math.sin(tR(la2))-Math.sin(tR(la1))*Math.cos(tR(la2))*Math.cos(tR(lo2-lo1));return(Math.atan2(y,x)*180/Math.PI+360)%360;}
+
+/* ---------- the map ---------- */
+const loc=$('locator'),lx=loc.getContext('2d');let bnds=null,lw=0,lh=0;
+function locBounds(){let a=90,b=-90,c=200,d=-200;for(const x of blocks){if(x.lat<a)a=x.lat;if(x.lat>b)b=x.lat;if(x.lng<c)c=x.lng;if(x.lng>d)d=x.lng;}bnds={a,b,c,d};}
+function locXY(la,ln){const pad=14,lngR=bnds.d-bnds.c,latR=bnds.b-bnds.a,sc=Math.min((lw-pad*2)/lngR,(lh-pad*2)/latR);
+  return[(lw-lngR*sc)/2+(ln-bnds.c)*sc,(lh-latR*sc)/2+(bnds.b-la)*sc];}
+function drawLocator(){
+  lw=loc.clientWidth;lh=loc.clientHeight;const d=Math.min(2,window.devicePixelRatio||1);
+  loc.width=lw*d;loc.height=lh*d;lx.setTransform(d,0,0,d,0,0);lx.clearRect(0,0,lw,lh);
+  for(const x of blocks){if(seenSet.has(x))continue;const p=locXY(x.lat,x.lng);
+    lx.fillStyle='#c8c1b0';lx.globalAlpha=0.5;lx.fillRect(p[0]-0.7,p[1]-0.7,1.4,1.4);}
+  lx.globalAlpha=1;
+  for(const x of seenSet){if(x===current)continue;const p=locXY(x.lat,x.lng);
+    lx.fillStyle='#b9742f';lx.beginPath();lx.arc(p[0],p[1],2.2,0,7);lx.fill();}
+  if(goneMarker){const p=locXY(goneMarker.lat,goneMarker.lng);lx.strokeStyle='#8a7d6f';lx.lineWidth=1.4;lx.beginPath();lx.arc(p[0],p[1],4.5,0,7);lx.stroke();}
+  if(current){const p=locXY(current.lat,current.lng);
+    if(pulse>0){lx.globalAlpha=0.45*pulse;lx.strokeStyle='#a8392b';lx.lineWidth=1.4;lx.beginPath();lx.arc(p[0],p[1],5+24*(1-pulse),0,7);lx.stroke();lx.globalAlpha=1;}
+    lx.fillStyle='#a8392b';lx.beginPath();lx.arc(p[0],p[1],4,0,7);lx.fill();
+    lx.strokeStyle='rgba(168,57,43,.35)';lx.lineWidth=1.2;lx.beginPath();lx.arc(p[0],p[1],7.5,0,7);lx.stroke();
+    // town label
+    const town=titlecase(current.town);if(town){lx.font='600 11px "IBM Plex Mono",monospace';lx.fillStyle='#211e17';
+      const tw=lx.measureText(town).width;let tx=p[0]+11,ty=p[1]+4;if(tx+tw>lw-4)tx=p[0]-11-tw;if(ty<12)ty=12;if(ty>lh-4)ty=lh-4;
+      lx.strokeStyle='rgba(168,57,43,.5)';lx.lineWidth=1;lx.beginPath();lx.moveTo(p[0],p[1]);lx.lineTo(tx<p[0]?tx+tw:tx-3,ty-3);lx.stroke();
+      lx.fillText(town,tx,ty);}
+  }
+}
+function firePulse(){pulse=1;cancelAnimationFrame(pulseRaf);const t0=performance.now();(function a(t){pulse=Math.max(0,1-(t-t0)/700);drawLocator();if(pulse>0)pulseRaf=requestAnimationFrame(a);})(performance.now());}
+
+/* ---------- facade fallback (daylight) ---------- */
+const fc=$('facade'),fx=fc.getContext('2d');
+const PASTELS=[[223,214,196],[206,214,210],[214,205,196],[200,208,214],[219,210,204],[210,214,205]];
+function drawFacade(x,gone){
+  const w=fc.clientWidth||440,h=fc.clientHeight||290,d=Math.min(2,window.devicePixelRatio||1);
+  fc.width=w*d;fc.height=h*d;fx.setTransform(d,0,0,d,0,0);
+  const sky=fx.createLinearGradient(0,0,0,h);
+  if(gone){sky.addColorStop(0,'#d7d2c6');sky.addColorStop(1,'#cbc6ba');}else{sky.addColorStop(0,'#cdd8e2');sky.addColorStop(1,'#e6e9e6');}
+  fx.fillStyle=sky;fx.fillRect(0,0,w,h);
+  let seed=2166136261;const key=(x?x.block+x.street:'gone');for(let i=0;i<key.length;i++){seed^=key.charCodeAt(i);seed=Math.imul(seed,16777619)>>>0;}
+  const r=mulberry32(seed||1),floors=8+Math.floor(r()*14),cols=5+Math.floor(r()*6);
+  const pcol=gone?[150,146,136]:PASTELS[Math.floor(r()*PASTELS.length)];
+  const bw=Math.min(w*0.66,cols*30),bx=(w-bw)/2,bh=h*0.9,by=h-bh;
+  fx.fillStyle='rgba(40,38,30,0.08)';fx.fillRect(bx+5,by+6,bw,bh);
+  const body=fx.createLinearGradient(bx,0,bx+bw,0);
+  body.addColorStop(0,`rgb(${pcol[0]-12},${pcol[1]-12},${pcol[2]-12})`);body.addColorStop(.5,`rgb(${pcol[0]},${pcol[1]},${pcol[2]})`);body.addColorStop(1,`rgb(${pcol[0]-16},${pcol[1]-16},${pcol[2]-16})`);
+  fx.fillStyle=body;fx.fillRect(bx,by,bw,bh);
+  const padx=bw*0.09,pady=12,gw=bw-padx*2,gh=bh-pady*2-18,cwd=gw/cols,rhd=gh/floors,ww=cwd*0.6,wh=rhd*0.6;
+  for(let f=0;f<floors;f++)for(let c=0;c<cols;c++){const wx=bx+padx+c*cwd+(cwd-ww)/2,wy=by+pady+f*rhd+(rhd-wh)/2;
+    const lit=!gone&&r()<0.18;fx.fillStyle=gone?'rgba(70,68,60,0.55)':(lit?'rgba(232,206,150,0.85)':'rgba(70,84,98,0.5)');
+    fx.fillRect(wx,wy,ww,wh);fx.fillStyle='rgba(255,255,255,0.10)';fx.fillRect(wx,wy,ww,1);}
+  fx.fillStyle=`rgb(${pcol[0]-30},${pcol[1]-30},${pcol[2]-30})`;fx.fillRect(bx,by+bh-18,bw,18);
+  for(let c=0;c<=cols;c++)fx.fillRect(bx+c*(bw/cols)-1.5,by+bh-18,3,18);
+  fx.fillStyle=gone?'#bfb9ac':'#c9cdb9';fx.fillRect(0,h-7,w,7);
+}
+
+/* ---------- street view ---------- */
+const photo=$('photo'),srcline=$('srcline');
+function showFacade(){photo.classList.remove('show');fc.classList.add('show');srcline.style.display='none';}
+function svURL(loc,hd){return`https://maps.googleapis.com/maps/api/streetview?size=640x426&location=${loc}`+(hd!=null?`&heading=${hd.toFixed(0)}`:'')+`&pitch=8&fov=78&source=outdoor&key=${GOOGLE_KEY}`;}
+function swapPhoto(url,tok,label){const p=new Image();p.onload=()=>{if(tok!==photoTok)return;photo.src=url;photo.classList.add('show');fc.classList.remove('show');srcline.textContent=label;srcline.style.display='block';};p.onerror=()=>{};p.src=url;}
+async function loadPhoto(x){const tok=++photoTok;if(!GOOGLE_KEY)return;
+  try{const m=await fetch(`https://maps.googleapis.com/maps/api/streetview/metadata?location=${x.lat},${x.lng}&key=${GOOGLE_KEY}`).then(r=>r.json());
+    if(tok!==photoTok||x!==current)return;
+    if(m&&m.status==='OK')swapPhoto(svURL(`${x.lat},${x.lng}`,m.location?bearing(m.location.lat,m.location.lng,x.lat,x.lng):null),tok,'Google Street View');
+  }catch(e){swapPhoto(svURL(`${x.lat},${x.lng}`,null),tok,'Google Street View');}
+}
+/* the gone: look up the address, show what's there now */
+async function loadGonePhoto(str){const tok=++photoTok;goneMarker=null;
+  if(!GOOGLE_KEY){drawLocator();return;}
+  const addr=encodeURIComponent(str+', Singapore');
+  try{const m=await fetch(`https://maps.googleapis.com/maps/api/streetview/metadata?location=${addr}&key=${GOOGLE_KEY}`).then(r=>r.json());
+    if(tok!==photoTok)return;
+    if(m&&m.status==='OK'){swapPhoto(svURL(addr,null),tok,'the site today');goneMarker={lat:m.location.lat,lng:m.location.lng};drawLocator();}
+  }catch(e){}
+}
+
+/* ---------- card ---------- */
+function humanLine(age){if(age>=58)return"Older than almost everyone who lives in it.";if(age>=45)return"It has outlived a generation of residents.";if(age>=30)return"Middle-aged, as buildings go.";if(age>=15)return"Still young — most of its life ahead.";return"Practically new; its clock has barely begun.";}
+function statusFor(x){if(x.lease<=minYear+2)return["old","one of the oldest still standing"];if(x.expiry-THIS_YEAR<=minLeft+4)return["end","almost out of time"];if(x.lease>=2021)return["new","brand new"];return null;}
+function reflow(){$('rec').style.animation='none';void $('rec').offsetWidth;$('rec').style.animation='rise .5s ease both';}
+function showHome(x){
+  current=x;goneMarker=null;seenSet.add(x);if(x.lease<oldestFound)oldestFound=x.lease;
+  drawFacade(x,false);showFacade();loadPhoto(x);
+  const by=parseInt($('birth').value)||2000;
+  const age=THIS_YEAR-x.lease,left=x.expiry-THIS_YEAR,expiry=x.expiry,ageAt=expiry-by,yourEnd=by+LIFE_EXP;
+  const s=$('status'),st=statusFor(x);s.className='status'+(st?' show '+st[0]:'');s.textContent=st?st[1]:'';
+  $('entry').textContent=`Entry No. ${x.block}`;
+  $('name').textContent=`Blk ${x.block} ${titlecase(x.street)}`;
+  $('dates').innerHTML=`<b>${x.lease}</b> – <span class="end">${expiry}</span>`;
+  $('place').textContent=titlecase(x.town);
+  $('tl').style.display='block';
+  const livedPct=Math.max(0,Math.min(100,age/LEASE*100));
+  $('tlLived').style.width=livedPct+'%';$('tlNow').style.left=livedPct+'%';
+  $('tlBuilt').textContent=`built ${x.lease}`;$('tlEnd').textContent=`lease ends ${expiry}`;
+  const youPct=(yourEnd-x.lease)/LEASE*100,youEl=$('tlYou');
+  if(youPct>0&&youPct<100){youEl.style.display='block';youEl.style.left=youPct+'%';}else youEl.style.display='none';
+  $('note').textContent=`${age} years old · ${left} years of lease left. ${humanLine(age)}`;
+  if(ageAt>LIFE_EXP)$('verdict').innerHTML=`When the lease ends, you'd be <b>${ageAt}</b> — past a lifetime. <span class="em">This home outlives you.</span>`;
+  else $('verdict').innerHTML=`When the lease ends in ${expiry}, you'll be <b>${ageAt}</b> — likely here to watch it go.`;
+  $('gen').innerHTML=`A child born here today would be ${left} when it ends, and inherit nothing.`;
+  reflow();firePulse();updateStats();
+}
+function showGone(str){
+  current=null;photoTok++;const i=str.indexOf(' ');
+  drawFacade(null,true);showFacade();loadGonePhoto(str);
+  const s=$('status');s.className='status show gone-s';s.textContent='already gone';
+  $('entry').textContent='Entry · withdrawn';
+  $('name').textContent=`Blk ${str.slice(0,i)} ${titlecase(str.slice(i+1))}`;
+  $('dates').innerHTML=`<b>demolished</b>`;$('place').textContent='no longer standing';
+  $('tl').style.display='none';
+  $('note').textContent='A home that already reached the end. The building is gone — this is what stands in its place now.';
+  $('verdict').innerHTML='It outlasted its lease only on paper. Everything still standing is headed here.';
+  $('gen').innerHTML='';
+  reflow();drawLocator();
+}
+
+/* ---------- loop ---------- */
+let mode='random';
+function pick(){if(mode==='old')return sorted.old[Math.floor(rnd()*sorted.old.length)];if(mode==='new')return sorted.new[Math.floor(rnd()*sorted.new.length)];if(mode==='end')return sorted.end[Math.floor(rnd()*sorted.end.length)];return blocks[Math.floor(rnd()*blocks.length)];}
+function pull(){if(mode==='gone'){showGone(DEMOLISHED[Math.floor(rnd()*DEMOLISHED.length)]);return;}let x=pick(),g=0;while(x===current&&g++<6)x=pick();showHome(x);}
+function updateStats(){let line=`Homes met: <b>${seenSet.size}</b> of ${blocks.length.toLocaleString()}`;
+  if(oldestFound<9999)line+=`<br>Oldest found: <b>${oldestFound}</b>`+(oldestFound>minYear?` <span class="hunt">· the oldest is ${minYear}</span>`:` <span class="hunt">· the oldest in Singapore</span>`);
+  $('stats').innerHTML=line;}
+
+$('pull').addEventListener('click',pull);
+document.addEventListener('keydown',e=>{if(e.code==='Space'&&!document.querySelector('.take.show')&&document.activeElement.tagName!=='INPUT'){e.preventDefault();pull();}if(e.key==='Escape')document.querySelectorAll('.take.show').forEach(t=>t.classList.remove('show'));});
+$('birth').addEventListener('input',()=>{if(current)showHome(current);});
+$('modes').addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(!b)return;mode=b.dataset.m;[...$('modes').children].forEach(c=>c.classList.toggle('on',c===b));pull();});
+$('aboutBtn').addEventListener('click',()=>$('about').classList.add('show'));
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('.take').classList.remove('show')));
+window.addEventListener('resize',()=>{if(current)drawFacade(current,false);else if(mode==='gone')drawFacade(null,true);else drawFacade(null,false);drawLocator();});
+
+(async function(){
+  blocks=await loadBlocks();
+  for(const x of blocks)x.expiry=x.lease+LEASE;
+  const k=Math.max(40,blocks.length*0.01|0);
+  sorted.old=[...blocks].sort((a,b)=>a.lease-b.lease).slice(0,k);
+  sorted.new=[...blocks].sort((a,b)=>b.lease-a.lease).slice(0,k);
+  sorted.end=[...blocks].sort((a,b)=>a.expiry-b.expiry).slice(0,k);
+  for(const x of blocks){if(x.lease<minYear)minYear=x.lease;if(x.expiry-THIS_YEAR<minLeft)minLeft=x.expiry-THIS_YEAR;}
+  locBounds();drawLocator();updateStats();drawFacade(null,false);showFacade();
+})();
+</script>
+</body>
+</html>
